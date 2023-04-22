@@ -59,7 +59,7 @@ class Downloader:
         end = time.time()
         time_passed = end - self.start_time
         download_speed = sum(self.fetched_size) / time_passed
-        t = util.readable_file_size(download_speed, suffix="Bps")
+        t = "@ " + util.readable_file_size(download_speed, suffix="Bps")
         util.print_progress(self.chunks, self.file_size, self.chunk_size, self.fetched_size, extra_text=t)
 
     async def _download(self):
@@ -74,12 +74,15 @@ class Downloader:
                 self.start_time = time.time()
 
                 fetchers = []
-                for i in range(self.chunks):
-                    start_i = i * int(self.file_size / self.chunks)
-                    end_i = (i + 1) * int(self.file_size / self.chunks) - 1
-                    if end_i > self.file_size:
-                        end_i = self.file_size
-                    fetchers.append(asyncio.create_task(self._fetch_part(session, i, start_i, end_i)))
+                if self.chunks == 1:
+                    fetchers.append(asyncio.create_task(self._fetch_whole(session)))
+                else:
+                    for i in range(self.chunks):
+                        start_i = i * int(self.file_size / self.chunks)
+                        end_i = (i + 1) * int(self.file_size / self.chunks) - 1
+                        if end_i > self.file_size:
+                            end_i = self.file_size
+                        fetchers.append(asyncio.create_task(self._fetch_part(session, i, start_i, end_i)))
 
                 # run tasks concurrently:
 
@@ -98,14 +101,25 @@ class Downloader:
             self.status = self.STATUS_CANCELED
 
     async def _fetch_header(self, session: ClientSession):
-        async with session.head(self.url) as resp:
+        async with session.get(self.url) as resp:
             self.headers = resp.headers
             self.file_size = util.getFileSize(self.headers)
             self.file_name = util.getFileName(self.headers, self.url)
             self.chunk_size = int(self.file_size / self.chunks)
-            if "Accept-Ranges" in self.headers:
-                if self.headers["Accept-Ranges"] != "bytes":
-                    self.setChunks(1)
+            if self.file_size <= 0:
+                self.setChunks(1)
+            if ("Accept-Ranges" not in self.headers) or (self.headers["Accept-Ranges"] != "bytes"):
+                self.setChunks(1)
+
+    async def _fetch_whole(self, session: ClientSession):
+        """this is used when the header doesn't have a file size property"""
+        CHUNK_SIZE = 4096
+        with open(f"_0_" + self.file_name, "wb") as f:
+            async with session.get(self.url) as resp:
+                async for chunk in resp.content.iter_chunked(CHUNK_SIZE):
+                    BYTES_WRITTEN = f.write(chunk)
+                    self.fetched_size[0] += BYTES_WRITTEN
+                    self._print_progress()
 
     async def _fetch_part(self, session: ClientSession, part_index, start, end):
         CHUNK_SIZE = 4096

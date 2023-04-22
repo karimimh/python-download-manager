@@ -47,6 +47,10 @@ def getFileName(headers, url: str):
     filename = ''
     if "Content-Disposition" in headers:
         filename = re.findall("filename=(.+)", headers["Content-Disposition"])[0]
+        if filename.startswith("\"") and filename.endswith("\""):
+            filename = filename[1:len(filename) - 1]
+        if filename.startswith("\'") and filename.endswith("\'"):
+            filename = filename[1:len(filename) - 1]
     else:
         filename = url.split("/")[-1]
 
@@ -74,6 +78,10 @@ def readable_file_size(num, suffix="B"):
 
 
 def print_progress(chunks, file_size, chunk_size, fetched_size: list, extra_text=""):
+    if file_size <= 0:
+        _print_progress_no_file_size(chunks, fetched_size, extra_text)
+        return
+
     progress_bar = ""
 
     BAR_LENGTH = 50
@@ -92,6 +100,13 @@ def print_progress(chunks, file_size, chunk_size, fetched_size: list, extra_text
     progress_bar += chunk_str
 
     progress_bar += f" {extra_text}"
+    # clear previously written line:
+    print("                                                                      ", end="\r")
+    print(progress_bar, end='\r')
+
+
+def _print_progress_no_file_size(chunks, fetched_size: list, extra_text=""):
+    progress_bar = f" {readable_file_size(sum(fetched_size))} {extra_text}"
     # clear previously written line:
     print("                                                                      ", end="\r")
     print(progress_bar, end='\r')

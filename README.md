@@ -21,7 +21,7 @@ A simple download manager written in python that downloads a file in chunks usin
    </kbd>
  </p>
  
-# Limitations
+# limitations
 This is a project I do as a hubby and therefor many possibilities are still not considered in the development.<br/>
 In the next commits, I will try to make it more robust and implement the pausing functionality. <br/>
 I might also make a GUI version using python's ktinter module.

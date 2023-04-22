@@ -92,4 +92,6 @@ def print_progress(chunks, file_size, chunk_size, fetched_size: list, extra_text
     progress_bar += chunk_str
 
     progress_bar += f" {extra_text}"
+    # clear previously written line:
+    print("                                                                      ", end="\r")
     print(progress_bar, end='\r')

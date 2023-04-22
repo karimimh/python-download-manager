@@ -2,7 +2,6 @@ import asyncio
 import os
 import time
 
-import aiohttp.web
 from aiohttp import ClientSession
 
 import util

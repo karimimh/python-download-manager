@@ -1,5 +1,13 @@
 # python-download-manager
 A simple download manager written in python that downloads a file in chunks using cuncurrency APIs.
+
+# requirements
+<ul>
+  <li> python3 </li>
+  <li> aiohttp module should be installed. (<code>pip3 install aiohttp </code>) </li>
+  <li> colorama module should be installed. (<code>pip3 install colorama </code>) </li>
+</ul>
+
 # how to run
 <ol>
   <li> git clone or download the repository. </li>
@@ -23,5 +31,4 @@ A simple download manager written in python that downloads a file in chunks usin
  
 # limitations
 This is a project I do as a hubby and therefor many possibilities are still not considered in the development.<br/>
-In the next commits, I will try to make it more robust and implement the pausing functionality. <br/>
-I might also make a GUI version using python's ktinter module.
+In the next commits, I will try to make it more robust. <br/>

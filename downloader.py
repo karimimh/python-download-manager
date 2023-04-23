@@ -45,6 +45,8 @@ class Downloader:
 
                 self._load_progress()
 
+                print(f"file {self.file_name} \nwill be downloaded in {self.chunks} chunks.")
+
                 self.tagged_time = time.time()
 
                 fetchers = []
@@ -124,7 +126,8 @@ class Downloader:
                         contents = f_i.read()
                         f.write(contents)
                     os.unlink(self._get_chunk_file_path(i))  # delete it, no longer needed
-            os.unlink(self._get_progress_file_path())  # delete it, no longer needed
+            if os.path.exists(self._get_progress_file_path()):
+                os.unlink(self._get_progress_file_path())  # delete it, no longer needed
 
     def setChunks(self, chunks):
         self.chunks = chunks

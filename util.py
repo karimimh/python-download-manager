@@ -1,11 +1,8 @@
+import functools
 import math
-import os
 import re
-
 import time
 from typing import Callable, Any
-
-import functools
 
 from colorama import Fore
 

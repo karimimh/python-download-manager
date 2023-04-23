@@ -14,5 +14,4 @@ if __name__ == '__main__':
     chunks = input("Enter connection count (leave empty for 2): ")
     if chunks and chunks.isdigit() and int(chunks) <= 20:
         d.setChunks(int(chunks))
-    print(f"Downloading file in {d.chunks} chunks ...")
     d.download()

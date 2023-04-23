@@ -1,4 +1,5 @@
 import math
+import os
 import re
 
 import time
@@ -69,12 +70,18 @@ def isDownloadable(headers):
     return True
 
 
-def readable_file_size(num, suffix="B"):
-    for unit in ["", "K", "M", "G", "T", "P", "E", "Z"]:
+def readable_file_size(num, suffix="B", justify_left=False):
+    for unit in [" ", "K", "M", "G", "T", "P", "E", "Z"]:
         if abs(num) < 1024.0:
-            return f"{num:3.1f}{unit}{suffix}"
+            s = f"{num:.1f} {unit}{suffix}"
+            if unit == " ":
+                s = f"{num:.1f} {suffix}"
+            if justify_left:
+                return f"{s:<9}"
+            else:
+                return f"{s:>9}"
         num /= 1024.0
-    return f"{num:.2f}{suffix}"
+    return " " * 9  # whould not be executed
 
 
 def print_progress(chunks, file_size, chunk_size, fetched_size: list, extra_text=""):
@@ -84,7 +91,7 @@ def print_progress(chunks, file_size, chunk_size, fetched_size: list, extra_text
 
     progress_bar = ""
 
-    BAR_LENGTH = 50
+    BAR_LENGTH = 40
     CHUNK_LENGTH = math.ceil(BAR_LENGTH / chunks)
     LAST_CHUNK_LENGTH = BAR_LENGTH - CHUNK_LENGTH * (chunks - 1)
 
@@ -92,21 +99,19 @@ def print_progress(chunks, file_size, chunk_size, fetched_size: list, extra_text
 
     for i in range(chunks - 1):
         chunk_bars = CHUNK_LENGTH * fetched_size[i] // chunk_size
-        chunk_str = ("#" * chunk_bars) + Fore.LIGHTBLACK_EX + "#" * (CHUNK_LENGTH - chunk_bars) + Fore.BLACK
+        chunk_str = Fore.BLUE + ("•" * chunk_bars) + Fore.LIGHTBLACK_EX + "•" * (
+                CHUNK_LENGTH - chunk_bars) + Fore.BLACK
         progress_bar += chunk_str
 
     chunk_bars = math.ceil(LAST_CHUNK_LENGTH * fetched_size[-1] / last_chunk_size)
-    chunk_str = ("#" * chunk_bars) + Fore.LIGHTBLACK_EX + ("#" * (LAST_CHUNK_LENGTH - chunk_bars)) + Fore.BLACK
+    chunk_str = Fore.BLUE + ("•" * chunk_bars) + Fore.LIGHTBLACK_EX + (
+            "•" * (LAST_CHUNK_LENGTH - chunk_bars)) + Fore.BLACK
     progress_bar += chunk_str
 
     progress_bar += f" {extra_text}"
-    # clear previously written line:
-    print("                                                                      ", end="\r")
     print(progress_bar, end='\r')
 
 
 def _print_progress_no_file_size(chunks, fetched_size: list, extra_text=""):
-    progress_bar = f" {readable_file_size(sum(fetched_size))} {extra_text}"
-    # clear previously written line:
-    print("                                                                      ", end="\r")
+    progress_bar = f" {extra_text}"
     print(progress_bar, end='\r')
